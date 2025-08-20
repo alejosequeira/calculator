@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Cálculo de Descuento de Documentos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e40af 0%, #3730a3 100%);
+            color: white;
+            padding: 2rem 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+        }
+
+        .logo-container {
+            flex-shrink: 0;
+        }
+
+        .logo {
+            height: 80px;
+            width: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .header-text {
+            text-align: left;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.025em;
+        }
+
+        .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                padding: 0 1rem;
+            }
+
+            .header-text {
+                text-align: center;
+            }
+
+            .logo {
+                height: 60px;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .header p {
+                font-size: 0.875rem;
+            }
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+        }
+
+        .calculator-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .section-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+        }
+
+        .section-header p {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .form-content {
+            padding: 2rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            background: #fff;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .input-description {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+
+        .calculate-button {
+            width: 100%;
+            background: linear-gradient(135deg, #1e40af 0%, #3730a3 100%);
+            color: white;
+            border: none;
+            padding: 0.875rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            letter-spacing: 0.025em;
+        }
+
+        .calculate-button:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #4338ca 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .calculate-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+
+        .results-content {
+            padding: 2rem;
+        }
+
+        .calculation-summary {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: white;
+            margin: 1rem -1.5rem -1.5rem;
+            padding: 1rem 1.5rem;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .summary-label {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .summary-value {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .calculation-details {
+            background: #fefefe;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .details-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 1rem;
+        }
+
+        .formula-display {
+            background: #f3f4f6;
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.875rem;
+            border-left: 3px solid #6366f1;
+            margin-bottom: 1rem;
+        }
+
+        .step-by-step {
+            list-style: none;
+            counter-reset: step-counter;
+        }
+
+        .step-by-step li {
+            counter-increment: step-counter;
+            margin-bottom: 0.75rem;
+            padding-left: 2rem;
+            position: relative;
+            font-size: 0.875rem;
+            color: #4b5563;
+        }
+
+        .step-by-step li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: #3b82f6;
+            color: white;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            display: none;
+        }
+
+        .info-panel {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-title {
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .info-text {
+            font-size: 0.8rem;
+            color: #3730a3;
+            line-height: 1.5;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="logo.jpeg" alt="Logo" class="logo">
+            </div>
+            <div class="header-text">
+                <h1>Sistema de Cálculo de Descuento de Documentos</h1>
+                <p>Herramienta profesional para el análisis financiero de instrumentos descontados</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Sección de Calculadora -->
+        <div class="calculator-section">
+            <div class="section-header">
+                <h2>Parámetros de Cálculo</h2>
+                <p>Ingrese los datos del documento a descontar</p>
+            </div>
+
+            <div class="form-content">
+                <div class="info-panel">
+                    <div class="info-title">Información del Cálculo</div>
+                    <div class="info-text">
+                        Se utiliza el método de descuento comercial con base de 360 días, 
+                        estándar en operaciones bancarias y financieras.
+                    </div>
+                </div>
+
+                <form id="calculatorForm">
+                    <div class="input-group">
+                        <label class="input-label" for="tasa">Tasa de Descuento Anual (%)</label>
+                        <input type="number" id="tasa" class="input-field" step="0.001" min="0" max="100" 
+                               placeholder="15.750" required>
+                        <div class="input-description">Tasa nominal anual expresada en porcentaje</div>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label" for="plazo">Plazo hasta el Vencimiento</label>
+                        <input type="number" id="plazo" class="input-field" min="1" max="3650" 
+                               placeholder="90" required>
+                        <div class="input-description">Días calendario hasta la fecha de vencimiento</div>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label" for="monto">Valor Nominal del Documento</label>
+                        <input type="number" id="monto" class="input-field" step="0.01" min="0.01" 
+                               placeholder="100000.00" required>
+                        <div class="input-description">Monto total del documento en pesos argentinos</div>
+                    </div>
+
+                    <div class="error-message" id="errorMessage"></div>
+
+                    <button type="submit" class="calculate-button" id="calculateBtn">
+                        Calcular Descuento
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sección de Resultados -->
+        <div class="results-section">
+            <div class="section-header">
+                <h2>Resultados del Análisis</h2>
+                <p>Resumen ejecutivo del cálculo financiero</p>
+            </div>
+
+            <div class="results-content">
+                <div id="resultsContainer" class="hidden">
+                    <div class="calculation-summary">
+                        <div class="summary-row">
+                            <span class="summary-label">Valor Nominal:</span>
+                            <span class="summary-value" id="displayMonto">$0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Tasa de Descuento:</span>
+                            <span class="summary-value" id="displayTasa">0.000%</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Días al Vencimiento:</span>
+                            <span class="summary-value" id="displayPlazo">0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Descuento Aplicado:</span>
+                            <span class="summary-value" id="displayDescuento">$0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Valor Presente Neto:</span>
+                            <span id="displayTotal">$0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="calculation-details">
+                        <div class="details-title">Detalle del Cálculo</div>
+                        
+                        <div class="formula-display">
+                            Descuento = Valor Nominal × Tasa × (Días ÷ 360)
+                            <br>Valor Presente = Valor Nominal - Descuento
+                        </div>
+
+                        <ol class="step-by-step" id="calculationSteps">
+                            <li>Conversión de tasa anual a decimal</li>
+                            <li>Cálculo del factor tiempo (días/360)</li>
+                            <li>Aplicación de la fórmula de descuento</li>
+                            <li>Determinación del valor presente</li>
+                        </ol>
+
+                        <div style="margin-top: 1rem; padding: 1rem; background: #f9fafb; border-radius: 6px;">
+                            <div style="font-size: 0.75rem; color: #6b7280;">
+                                <strong>Tasa Efectiva Equivalente:</strong> <span id="tasaEfectiva">0.000%</span><br>
+                                <strong>Rendimiento por Día:</strong> <span id="rendimientoDiario">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="placeholderMessage" style="text-align: center; color: #6b7280; padding: 3rem;">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor" style="margin-bottom: 1rem; opacity: 0.3;">
+                        <path d="M19 3H5C3.9 3 3 3.9 3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+                    </svg>
+                    <p>Complete los parámetros de cálculo para visualizar los resultados</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class DiscountCalculator {
+            constructor() {
+                this.form = document.getElementById('calculatorForm');
+                this.inputs = {
+                    tasa: document.getElementById('tasa'),
+                    plazo: document.getElementById('plazo'),
+                    monto: document.getElementById('monto')
+                };
+                this.results = {
+                    container: document.getElementById('resultsContainer'),
+                    placeholder: document.getElementById('placeholderMessage'),
+                    monto: document.getElementById('displayMonto'),
+                    tasa: document.getElementById('displayTasa'),
+                    plazo: document.getElementById('displayPlazo'),
+                    descuento: document.getElementById('displayDescuento'),
+                    total: document.getElementById('displayTotal'),
+                    tasaEfectiva: document.getElementById('tasaEfectiva'),
+                    rendimientoDiario: document.getElementById('rendimientoDiario')
+                };
+                this.errorMessage = document.getElementById('errorMessage');
+                this.calculateBtn = document.getElementById('calculateBtn');
+
+                this.init();
+            }
+
+            init() {
+                this.form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.calculate();
+                });
+
+                // Auto-cálculo en tiempo real con debounce
+                Object.values(this.inputs).forEach(input => {
+                    input.addEventListener('input', this.debounce(() => {
+                        if (this.areAllInputsValid()) {
+                            this.calculate();
+                        }
+                    }, 300));
+                });
+            }
+
+            debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+
+            areAllInputsValid() {
+                return Object.values(this.inputs).every(input => 
+                    input.value !== '' && !isNaN(parseFloat(input.value))
+                );
+            }
+
+            validateInputs() {
+                const tasa = parseFloat(this.inputs.tasa.value);
+                const plazo = parseInt(this.inputs.plazo.value);
+                const monto = parseFloat(this.inputs.monto.value);
+
+                if (isNaN(tasa) || isNaN(plazo) || isNaN(monto)) {
+                    throw new Error('Todos los campos deben contener valores numéricos válidos.');
+                }
+
+                if (tasa < 0 || tasa > 100) {
+                    throw new Error('La tasa de descuento debe estar entre 0% y 100%.');
+                }
+
+                if (plazo < 1 || plazo > 3650) {
+                    throw new Error('El plazo debe estar entre 1 y 3650 días.');
+                }
+
+                if (monto <= 0) {
+                    throw new Error('El valor nominal debe ser mayor a cero.');
+                }
+
+                return { tasa, plazo, monto };
+            }
+
+            calculate() {
+                try {
+                    this.clearError();
+                    this.setLoading(true);
+
+                    const { tasa, plazo, monto } = this.validateInputs();
+
+                    // Cálculos principales
+                    const tasaDecimal = tasa / 100;
+                    const factorTiempo = plazo / 360;
+                    const descuento = monto * tasaDecimal * factorTiempo;
+                    const valorPresente = monto - descuento;
+
+                    // Cálculos adicionales
+                    const tasaEfectiva = (descuento / valorPresente) * (360 / plazo) * 100;
+                    const rendimientoDiario = descuento / plazo;
+
+                    // Actualizar display
+                    this.updateResults({
+                        monto,
+                        tasa,
+                        plazo,
+                        descuento,
+                        valorPresente,
+                        tasaEfectiva,
+                        rendimientoDiario
+                    });
+
+                    this.showResults();
+
+                } catch (error) {
+                    this.showError(error.message);
+                    this.hideResults();
+                } finally {
+                    this.setLoading(false);
+                }
+            }
+
+            updateResults(data) {
+                this.results.monto.textContent = this.formatCurrency(data.monto);
+                this.results.tasa.textContent = data.tasa.toFixed(3) + '%';
+                this.results.plazo.textContent = data.plazo + ' días';
+                this.results.descuento.textContent = this.formatCurrency(data.descuento);
+                this.results.total.textContent = this.formatCurrency(data.valorPresente);
+                this.results.tasaEfectiva.textContent = data.tasaEfectiva.toFixed(3) + '%';
+                this.results.rendimientoDiario.textContent = this.formatCurrency(data.rendimientoDiario);
+
+                // Actualizar los pasos de cálculo
+                const steps = document.getElementById('calculationSteps');
+                const tasaDecimal = data.tasa / 100;
+                const factorTiempo = data.plazo / 360;
+                
+                steps.innerHTML = `
+                    <li>Tasa decimal: ${data.tasa}% ÷ 100 = ${tasaDecimal.toFixed(6)}</li>
+                    <li>Factor tiempo: ${data.plazo} días ÷ 360 = ${factorTiempo.toFixed(6)}</li>
+                    <li>Descuento: ${this.formatCurrency(data.monto)} × ${tasaDecimal.toFixed(6)} × ${factorTiempo.toFixed(6)} = ${this.formatCurrency(data.descuento)}</li>
+                    <li>Valor presente: ${this.formatCurrency(data.monto)} - ${this.formatCurrency(data.descuento)} = ${this.formatCurrency(data.valorPresente)}</li>
+                `;
+            }
+
+            formatCurrency(value) {
+                return '$' + value.toLocaleString('es-AR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
+
+            showResults() {
+                this.results.container.classList.remove('hidden');
+                this.results.container.classList.add('fade-in');
+                this.results.placeholder.classList.add('hidden');
+            }
+
+            hideResults() {
+                this.results.container.classList.add('hidden');
+                this.results.placeholder.classList.remove('hidden');
+            }
+
+            showError(message) {
+                this.errorMessage.textContent = message;
+                this.errorMessage.style.display = 'block';
+            }
+
+            clearError() {
+                this.errorMessage.style.display = 'none';
+                this.errorMessage.textContent = '';
+            }
+
+            setLoading(loading) {
+                if (loading) {
+                    this.calculateBtn.textContent = 'Calculando...';
+                    this.calculateBtn.disabled = true;
+                    document.body.classList.add('loading');
+                } else {
+                    this.calculateBtn.textContent = 'Calcular Descuento';
+                    this.calculateBtn.disabled = false;
+                    document.body.classList.remove('loading');
+                }
+            }
+        }
+
+        // Inicializar la aplicación cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', () => {
+            new DiscountCalculator();
+        });
+    </script>
+</body>
+</html>
