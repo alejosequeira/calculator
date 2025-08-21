@@ -67,24 +67,21 @@
         @media (max-width: 768px) {
             .header-content {
                 flex-direction: column;
-                text-align: center;
-                padding: 0 1rem;
+                gap: 1rem;
             }
-
+            
+            .header-divider {
+                width: 80px;
+                height: 2px;
+            }
+            
             .header-text {
                 text-align: center;
             }
-
-            .logo {
+            
+            .company-logo {
+                width: 60px;
                 height: 60px;
-            }
-
-            .header h1 {
-                font-size: 1.5rem;
-            }
-
-            .header p {
-                font-size: 0.875rem;
             }
         }
 
@@ -400,6 +397,13 @@
                         <div class="input-description">Monto total del documento en pesos argentinos</div>
                     </div>
 
+                    <div class="input-group">
+                        <label class="input-label" for="interesesFijos">Intereses Fijos Adicionales (%)</label>
+                        <input type="number" id="interesesFijos" class="input-field" step="0.001" min="0" max="100"
+                               placeholder="2.500" value="0">
+                        <div class="input-description">Porcentaje fijo de intereses o comisiones adicionales (0% - 100%)</div>
+                    </div>
+
                     <div class="error-message" id="errorMessage"></div>
 
                     <button type="submit" class="calculate-button" id="calculateBtn">
@@ -436,6 +440,14 @@
                             <span class="summary-value" id="displayDescuento">$0.00</span>
                         </div>
                         <div class="summary-row">
+                            <span class="summary-label">Intereses Fijos:</span>
+                            <span class="summary-value" id="displayInteresesFijos">0.000%</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Descuento Total:</span>
+                            <span class="summary-value" id="displayDescuentoTotal">$0.00</span>
+                        </div>
+                        <div class="summary-row">
                             <span>Valor Presente Neto:</span>
                             <span id="displayTotal">$0.00</span>
                         </div>
@@ -445,15 +457,20 @@
                         <div class="details-title">Detalle del Cálculo</div>
                         
                         <div class="formula-display">
-                            Descuento = Valor Nominal × Tasa × (Días ÷ 360)
-                            <br>Valor Presente = Valor Nominal - Descuento
+                            Descuento Comercial = Valor Nominal × Tasa × (Días ÷ 360)
+                            <br>Intereses Fijos = Valor Nominal × % Intereses Fijos
+                            <br>Descuento Total = Descuento Comercial + Intereses Fijos
+                            <br>Valor Presente = Valor Nominal - Descuento Total
                         </div>
 
                         <ol class="step-by-step" id="calculationSteps">
                             <li>Conversión de tasa anual a decimal</li>
+                            <li>Conversión de intereses fijos a decimal</li>
                             <li>Cálculo del factor tiempo (días/360)</li>
-                            <li>Aplicación de la fórmula de descuento</li>
-                            <li>Determinación del valor presente</li>
+                            <li>Aplicación de la fórmula de descuento comercial</li>
+                            <li>Cálculo de intereses fijos sobre el valor nominal</li>
+                            <li>Suma de ambos descuentos</li>
+                            <li>Determinación del valor presente final</li>
                         </ol>
 
                         <div style="margin-top: 1rem; padding: 1rem; background: #f9fafb; border-radius: 6px;">
@@ -482,7 +499,8 @@
                 this.inputs = {
                     tasa: document.getElementById('tasa'),
                     plazo: document.getElementById('plazo'),
-                    monto: document.getElementById('monto')
+                    monto: document.getElementById('monto'),
+                    interesesFijos: document.getElementById('interesesFijos')
                 };
                 this.results = {
                     container: document.getElementById('resultsContainer'),
@@ -491,6 +509,8 @@
                     tasa: document.getElementById('displayTasa'),
                     plazo: document.getElementById('displayPlazo'),
                     descuento: document.getElementById('displayDescuento'),
+                    interesesFijos: document.getElementById('displayInteresesFijos'),
+                    descuentoTotal: document.getElementById('displayDescuentoTotal'),
                     total: document.getElementById('displayTotal'),
                     tasaEfectiva: document.getElementById('tasaEfectiva'),
                     rendimientoDiario: document.getElementById('rendimientoDiario')
@@ -539,9 +559,10 @@
                 const tasa = parseFloat(this.inputs.tasa.value);
                 const plazo = parseInt(this.inputs.plazo.value);
                 const monto = parseFloat(this.inputs.monto.value);
+                const interesesFijos = parseFloat(this.inputs.interesesFijos.value) || 0;
 
                 if (isNaN(tasa) || isNaN(plazo) || isNaN(monto)) {
-                    throw new Error('Todos los campos deben contener valores numéricos válidos.');
+                    throw new Error('Los campos tasa, plazo y monto son obligatorios y deben contener valores numéricos válidos.');
                 }
 
                 if (tasa < 0 || tasa > 100) {
@@ -556,7 +577,11 @@
                     throw new Error('El valor nominal debe ser mayor a cero.');
                 }
 
-                return { tasa, plazo, monto };
+                if (interesesFijos < 0 || interesesFijos > 100) {
+                    throw new Error('Los intereses fijos deben estar entre 0% y 100%.');
+                }
+
+                return { tasa, plazo, monto, interesesFijos };
             }
 
             calculate() {
@@ -564,24 +589,31 @@
                     this.clearError();
                     this.setLoading(true);
 
-                    const { tasa, plazo, monto } = this.validateInputs();
+                    const { tasa, plazo, monto, interesesFijos } = this.validateInputs();
 
                     // Cálculos principales
                     const tasaDecimal = tasa / 100;
+                    const interesesFijosDecimal = interesesFijos / 100;
                     const factorTiempo = plazo / 360;
-                    const descuento = monto * tasaDecimal * factorTiempo;
-                    const valorPresente = monto - descuento;
+                    
+                    const descuentoComercial = monto * tasaDecimal * factorTiempo;
+                    const montoInteresesFijos = monto * interesesFijosDecimal;
+                    const descuentoTotal = descuentoComercial + montoInteresesFijos;
+                    const valorPresente = monto - descuentoTotal;
 
                     // Cálculos adicionales
-                    const tasaEfectiva = (descuento / valorPresente) * (360 / plazo) * 100;
-                    const rendimientoDiario = descuento / plazo;
+                    const tasaEfectiva = (descuentoTotal / valorPresente) * (360 / plazo) * 100;
+                    const rendimientoDiario = descuentoTotal / plazo;
 
                     // Actualizar display
                     this.updateResults({
                         monto,
                         tasa,
                         plazo,
-                        descuento,
+                        interesesFijos,
+                        descuentoComercial,
+                        montoInteresesFijos,
+                        descuentoTotal,
                         valorPresente,
                         tasaEfectiva,
                         rendimientoDiario
@@ -601,7 +633,9 @@
                 this.results.monto.textContent = this.formatCurrency(data.monto);
                 this.results.tasa.textContent = data.tasa.toFixed(3) + '%';
                 this.results.plazo.textContent = data.plazo + ' días';
-                this.results.descuento.textContent = this.formatCurrency(data.descuento);
+                this.results.descuento.textContent = this.formatCurrency(data.descuentoComercial);
+                this.results.interesesFijos.textContent = data.interesesFijos.toFixed(3) + '%';
+                this.results.descuentoTotal.textContent = this.formatCurrency(data.descuentoTotal);
                 this.results.total.textContent = this.formatCurrency(data.valorPresente);
                 this.results.tasaEfectiva.textContent = data.tasaEfectiva.toFixed(3) + '%';
                 this.results.rendimientoDiario.textContent = this.formatCurrency(data.rendimientoDiario);
@@ -609,13 +643,17 @@
                 // Actualizar los pasos de cálculo
                 const steps = document.getElementById('calculationSteps');
                 const tasaDecimal = data.tasa / 100;
+                const interesesFijosDecimal = data.interesesFijos / 100;
                 const factorTiempo = data.plazo / 360;
                 
                 steps.innerHTML = `
                     <li>Tasa decimal: ${data.tasa}% ÷ 100 = ${tasaDecimal.toFixed(6)}</li>
+                    <li>Intereses fijos decimal: ${data.interesesFijos}% ÷ 100 = ${interesesFijosDecimal.toFixed(6)}</li>
                     <li>Factor tiempo: ${data.plazo} días ÷ 360 = ${factorTiempo.toFixed(6)}</li>
-                    <li>Descuento: ${this.formatCurrency(data.monto)} × ${tasaDecimal.toFixed(6)} × ${factorTiempo.toFixed(6)} = ${this.formatCurrency(data.descuento)}</li>
-                    <li>Valor presente: ${this.formatCurrency(data.monto)} - ${this.formatCurrency(data.descuento)} = ${this.formatCurrency(data.valorPresente)}</li>
+                    <li>Descuento comercial: ${this.formatCurrency(data.monto)} × ${tasaDecimal.toFixed(6)} × ${factorTiempo.toFixed(6)} = ${this.formatCurrency(data.descuentoComercial)}</li>
+                    <li>Intereses fijos: ${this.formatCurrency(data.monto)} × ${interesesFijosDecimal.toFixed(6)} = ${this.formatCurrency(data.montoInteresesFijos)}</li>
+                    <li>Descuento total: ${this.formatCurrency(data.descuentoComercial)} + ${this.formatCurrency(data.montoInteresesFijos)} = ${this.formatCurrency(data.descuentoTotal)}</li>
+                    <li>Valor presente: ${this.formatCurrency(data.monto)} - ${this.formatCurrency(data.descuentoTotal)} = ${this.formatCurrency(data.valorPresente)}</li>
                 `;
             }
 
