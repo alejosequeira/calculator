@@ -23,28 +23,49 @@
             background: linear-gradient(135deg, #1e40af 0%, #3730a3 100%);
             color: white;
             padding: 2rem 0;
+            text-align: center;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
         .header-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
         }
 
-        .logo-container {
-            flex-shrink: 0;
+        .logo-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        .logo {
+        .company-logo {
+            width: 80px;
             height: 80px;
-            width: auto;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            margin-bottom: 0.5rem;
+        }
+
+        .company-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.25rem;
+        }
+
+        .company-tagline {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            color: white;
+        }
+
+        .header-divider {
+            width: 2px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.3);
         }
 
         .header-text {
@@ -348,9 +369,11 @@
 <body>
     <header class="header">
         <div class="header-content">
-            <div class="logo-container">
-                <img src="logo.jpeg" alt="Logo" class="logo">
-            </div>
+            <div class="logo-section">
+                <img src="data:image/png;base64,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
+            
+            <div class="header-divider"></div>
+            
             <div class="header-text">
                 <h1>Sistema de Cálculo de Descuento de Documentos</h1>
                 <p>Herramienta profesional para el análisis financiero de instrumentos descontados</p>
@@ -378,9 +401,9 @@
                 <form id="calculatorForm">
                     <div class="input-group">
                         <label class="input-label" for="tasa">Tasa de Descuento Anual (%)</label>
-                        <input type="number" id="tasa" class="input-field" step="0.001" min="0" max="100" 
+                        <input type="number" id="tasa" class="input-field" step="0.001" min="0" 
                                placeholder="15.750" required>
-                        <div class="input-description">Tasa nominal anual expresada en porcentaje</div>
+                        <div class="input-description">Tasa nominal anual (%). Se admite > 100.</div>
                     </div>
 
                     <div class="input-group">
@@ -565,8 +588,8 @@
                     throw new Error('Los campos tasa, plazo y monto son obligatorios y deben contener valores numéricos válidos.');
                 }
 
-                if (tasa < 0 || tasa > 100) {
-                    throw new Error('La tasa de descuento debe estar entre 0% y 100%.');
+                if (tasa < 0) {
+                    throw new Error('La tasa de descuento debe ser mayor o igual a 0%.');
                 }
 
                 if (plazo < 1 || plazo > 3650) {
@@ -601,8 +624,13 @@
                     const descuentoTotal = descuentoComercial + montoInteresesFijos;
                     const valorPresente = monto - descuentoTotal;
 
+                    // Advertencia si el descuento supera el valor nominal
+                    if (descuentoTotal >= monto) {
+                        this.showError('Advertencia: el descuento total es mayor o igual al valor nominal; el Valor Presente es ≤ 0. Revise supuestos si esto no es intencional.');
+                    }
+
                     // Cálculos adicionales
-                    const tasaEfectiva = (descuentoTotal / valorPresente) * (360 / plazo) * 100;
+                    const tasaEfectiva = valorPresente > 0 ? (descuentoTotal / valorPresente) * (360 / plazo) * 100 : null;
                     const rendimientoDiario = descuentoTotal / plazo;
 
                     // Actualizar display
@@ -637,7 +665,7 @@
                 this.results.interesesFijos.textContent = data.interesesFijos.toFixed(3) + '%';
                 this.results.descuentoTotal.textContent = this.formatCurrency(data.descuentoTotal);
                 this.results.total.textContent = this.formatCurrency(data.valorPresente);
-                this.results.tasaEfectiva.textContent = data.tasaEfectiva.toFixed(3) + '%';
+                this.results.tasaEfectiva.textContent = (data.tasaEfectiva === null) ? 'No definida (VP ≤ 0)' : (data.tasaEfectiva.toFixed(3) + '%');
                 this.results.rendimientoDiario.textContent = this.formatCurrency(data.rendimientoDiario);
 
                 // Actualizar los pasos de cálculo
